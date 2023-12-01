@@ -7,6 +7,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     let session_key = env::var("AOC_SESSION").unwrap();
     let client = rudolf_rs::Client::new(String::from(session_key));
 
+    let mut input = client.get(2023, 1).unwrap();
+
+    /*
     c.bench_function(
         "day00part1",
         |b| {
@@ -21,9 +24,6 @@ fn criterion_benchmark(c: &mut Criterion) {
         }
     );
 
-    /*
-    let mut input = client.get(2023, 1).unwrap();
-
     c.bench_function(
         "day01part1",
         |b| {
@@ -37,7 +37,26 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.iter(|| day01::part2(black_box(&input)))
         }
     );
+
     */
+
+    input = client.get(2023, 2).unwrap();
+
+    c.bench_function(
+        "day02part1",
+        |b| {
+            b.iter(|| day02::part1(black_box(&input)))
+        }
+    );
+
+    c.bench_function(
+        "day02part2",
+        |b| {
+            b.iter(|| day02::part2(black_box(&input)))
+        }
+    );
+
+
 }
 
 criterion_group!{
