@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 mod twenty_three;
 
 pub struct Solution {
