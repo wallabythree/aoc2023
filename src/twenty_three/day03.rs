@@ -2,11 +2,11 @@ use crate::Solution;
 
 pub const SOLVER: Solution = Solution { part1, part2 };
 
-pub fn part1(input: &str) -> usize {
+fn part1(input: &str) -> usize {
     input.len()
 }
 
-pub fn part2(input: &str) -> usize {
+fn part2(input: &str) -> usize {
     input.len()
 }
 

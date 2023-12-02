@@ -5,7 +5,7 @@ pub const SOLVER: Solution = Solution { part1, part2 };
 
 /// Returns the sum of all calibration values. Simple forward and backward
 /// scanning to find the first and last digit in each line respectively.
-pub fn part1(input: &str) -> usize {
+fn part1(input: &str) -> usize {
     let mut sum = 0;
     
     for line in input.lines() {
@@ -71,7 +71,7 @@ const LEXEMES: [&[u8]; 20] = [
 /// Returns the sum of all calibration values, where digits may be given as
 /// simple numbers or spelled out as letters. Scans in forward and backward
 /// direction to find the first and last digit in each line respectively.
-pub fn part2(input: &str) -> usize {
+fn part2(input: &str) -> usize {
 
     // assign a value to each forward lexeme equal to lexeme_position % 10
     let tokens: HashMap<_,_> = LEXEMES

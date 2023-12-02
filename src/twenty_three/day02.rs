@@ -60,7 +60,7 @@ impl Game {
     }
 }
 
-pub fn part1(input: &str) -> usize {
+fn part1(input: &str) -> usize {
     let mut sum = 0;
 
     for line in input.lines() {
@@ -74,7 +74,7 @@ pub fn part1(input: &str) -> usize {
     sum
 }
 
-pub fn part2(input: &str) -> usize {
+fn part2(input: &str) -> usize {
     let mut sum = 0;
 
     for line in input.lines() {
