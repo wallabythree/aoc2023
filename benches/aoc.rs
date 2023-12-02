@@ -1,74 +1,28 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::env;
 use rudolf_rs;
-use solutions::*;
+use solutions;
 
 fn criterion_benchmark(c: &mut Criterion) {
+    let year = 2023;
+    let day = 2;
+
     let session_key = env::var("AOC_SESSION").unwrap();
     let client = rudolf_rs::Client::new(String::from(session_key));
+    let input = client.get(year, day).unwrap();
+    let solution = solutions::get_solution(year as usize, day as usize);
 
-    let mut input = client.get(2023, 1).unwrap();
-
-    /*
     c.bench_function(
-        "day00part1",
+        &format!("year{}day{}part1", year, day),
         |b| {
-            b.iter(|| day00::part1(black_box("0")))
+            b.iter(|| solution.part1(black_box(&input)))
         }
     );
 
     c.bench_function(
-        "day00part2",
+        &format!("year{}day{}part2", year, day),
         |b| {
-            b.iter(|| day00::part1(black_box("")))
-        }
-    );
-
-    c.bench_function(
-        "day01part1",
-        |b| {
-            b.iter(|| day01::part1(black_box(&input)))
-        }
-    );
-
-    c.bench_function(
-        "day01part2",
-        |b| {
-            b.iter(|| day01::part2(black_box(&input)))
-        }
-    );
-
-
-    input = client.get(2023, 2).unwrap();
-
-    c.bench_function(
-        "day02part1",
-        |b| {
-            b.iter(|| day02::part1(black_box(&input)))
-        }
-    );
-
-    c.bench_function(
-        "day02part2",
-        |b| {
-            b.iter(|| day02::part2(black_box(&input)))
-        }
-    );
-    */
-
-    input = client.get(2023, 3).unwrap();
-
-    c.bench_function(
-        "day03part1",
-        |b| {
-            b.iter(|| day03::part1(black_box(&input)))
-        }
-    );
-
-    c.bench_function(
-        "day03part2",
-        |b| {
-            b.iter(|| day03::part2(black_box(&input)))
+            b.iter(|| solution.part2(black_box(&input)))
         }
     );
 }

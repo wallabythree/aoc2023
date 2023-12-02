@@ -1,3 +1,7 @@
+use crate::Solution;
+
+pub const SOLVER: Solution = Solution { part1, part2 };
+
 const MAX_RED: usize = 12;
 const MAX_GREEN: usize = 13;
 const MAX_BLUE: usize = 14;
@@ -84,7 +88,7 @@ pub fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{part1, part2};
+    use super::SOLVER;
 
     const TEST_INPUT: &str = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
@@ -94,12 +98,12 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(TEST_INPUT), 8);
+        assert_eq!(SOLVER.part1(TEST_INPUT), 8);
     }
     
     #[test]
     fn test_part2() {
-        assert_eq!(part2(TEST_INPUT), 2286);
+        assert_eq!(SOLVER.part2(TEST_INPUT), 2286);
     }
 }
 

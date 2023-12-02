@@ -1,4 +1,7 @@
+use crate::Solution;
 use std::collections::hash_map::HashMap;
+
+pub const SOLVER: Solution = Solution { part1, part2 };
 
 /// Returns the sum of all calibration values. Simple forward and backward
 /// scanning to find the first and last digit in each line respectively.
@@ -97,7 +100,7 @@ pub fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::{part1, part2};
+    use super::SOLVER;
 
     const TEST_INPUT_1: &str = "1abc2
 pqr3stu8vwx
@@ -114,12 +117,12 @@ zoneight234
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(TEST_INPUT_1), 142);
+        assert_eq!(SOLVER.part1(TEST_INPUT_1), 142);
     }
     
     #[test]
     fn test_part2() {
-        assert_eq!(part2(TEST_INPUT_2), 281);
+        assert_eq!(SOLVER.part2(TEST_INPUT_2), 281);
     }
 }
 
