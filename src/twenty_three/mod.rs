@@ -1,18 +1,18 @@
-use crate::Solution;
+use crate::Solver;
 
 mod day00;
 mod day01;
 mod day02;
 mod day03;
 
-const SOLUTIONS: [&Solution; 4] = [
-    &day00::SOLVER,
-    &day01::SOLVER,
-    &day02::SOLVER,
-    &day03::SOLVER,
+const SOLUTIONS: [&dyn Solver; 4] = [
+    &day00::SOLUTION,
+    &day01::SOLUTION,
+    &day02::SOLUTION,
+    &day03::SOLUTION,
 ];
 
-pub fn get_solution(day: usize) -> &'static Solution {
+pub fn get_solution(day: usize) -> &'static dyn Solver {
     SOLUTIONS[day]
 }
 

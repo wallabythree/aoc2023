@@ -1,6 +1,6 @@
 use crate::Solution;
 
-pub const SOLVER: Solution = Solution { part1, part2 };
+pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
 fn part1(input: &str) -> usize {
     input.len()
@@ -12,18 +12,18 @@ fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::SOLVER;
+    use super::{part1, part2};
 
     const TEST_INPUT: &str = "";
 
     #[test]
     fn test_part1() {
-        assert_eq!(SOLVER.part1(TEST_INPUT), 0);
+        assert_eq!(part1(TEST_INPUT), 0);
     }
     
     #[test]
     fn test_part2() {
-        assert_eq!(SOLVER.part2(TEST_INPUT), TEST_INPUT.len());
+        assert_eq!(part2(TEST_INPUT), TEST_INPUT.len());
     }
 }
 
