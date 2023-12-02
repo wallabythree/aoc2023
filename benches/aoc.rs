@@ -9,7 +9,7 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     let session_key = env::var("AOC_SESSION").unwrap();
     let client = rudolf_rs::Client::new(String::from(session_key));
-    let input = client.get(year, day).unwrap();
+    let input = client.get_cached(year, day).unwrap();
     let solution = solutions::get_solution(year as usize, day as usize);
 
     c.bench_function(

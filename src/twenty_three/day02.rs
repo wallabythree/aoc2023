@@ -61,29 +61,19 @@ impl Game {
 }
 
 fn part1(input: &str) -> usize {
-    let mut sum = 0;
-
-    for line in input.lines() {
-        let game = Game::from(line);
-
-        if game.possible(MAX_RED, MAX_GREEN, MAX_BLUE) {
-            sum += game.id;
-        }
-    }
-
-    sum
+    input
+        .lines()
+        .map(Game::from)
+        .filter(|game| game.possible(MAX_RED, MAX_GREEN, MAX_BLUE))
+        .map(|game| game.id)
+        .sum()
 }
 
 fn part2(input: &str) -> usize {
-    let mut sum = 0;
-
-    for line in input.lines() {
-        let game = Game::from(line);
-
-        sum += game.power();
-    }
-
-    sum
+    input
+        .lines()
+        .map(|l| Game::from(l).power())
+        .sum()
 }
 
 #[cfg(test)]
