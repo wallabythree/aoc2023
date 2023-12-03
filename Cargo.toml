@@ -13,6 +13,7 @@ name = "aoc2023"
 path = "src/bin.rs"
 
 [dependencies]
+regex = "1.10.2"
 rudolf-rs = { path = "../rudolf-rs" } 
 
 [dev-dependencies]
