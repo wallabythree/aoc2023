@@ -70,7 +70,7 @@ fn part2(input: &str) -> usize {
     let stripped = input.replace('\n', "");
 
     let gears: Vec<_> = stripped
-        .match_indices("*")  // find gears
+        .match_indices('*')  // find gears
         .map(|(i, _)| Pos::from_offset(i, line_len))
         .collect();
 
