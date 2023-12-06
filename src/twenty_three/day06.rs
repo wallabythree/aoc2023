@@ -1,5 +1,3 @@
-// solution template
-
 use crate::Solution;
 
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
@@ -19,7 +17,6 @@ fn solve_quadratic(a: f64, b: f64, c: f64) -> Option<(f64, f64)> {
     Some(x)
 }
 
-#[derive(Debug)]
 struct Race {
     time: isize,
     record: isize,
@@ -39,7 +36,7 @@ impl Race {
     fn winning_ways(&self) -> usize {
         let winning_interval = self.winning_times();
 
-        winning_interval .1 - winning_interval.0
+        winning_interval.1 - winning_interval.0
     }
 }
 
