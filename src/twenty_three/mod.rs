@@ -6,8 +6,9 @@ mod day02;
 mod day03;
 mod day04;
 mod day06;
+mod day09;
 
-const SOLUTIONS: [&dyn Solver; 7] = [
+const SOLUTIONS: [&dyn Solver; 10] = [
     &day00::SOLUTION,
     &day01::SOLUTION,
     &day02::SOLUTION,
@@ -15,6 +16,9 @@ const SOLUTIONS: [&dyn Solver; 7] = [
     &day04::SOLUTION,
     &day00::SOLUTION, // TODO: implement domain flatmap solution
     &day06::SOLUTION,
+    &day00::SOLUTION,
+    &day00::SOLUTION,
+    &day09::SOLUTION,
 ];
 
 pub fn get_solution(day: usize) -> &'static dyn Solver {
