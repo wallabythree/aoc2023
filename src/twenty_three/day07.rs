@@ -153,11 +153,9 @@ fn part1(input: &str) -> usize {
 fn part2(input: &str) -> usize {
     let input = input.replace('J', "1");
 
-    let mut game = Game::try_from(input.as_str()).unwrap();
-
-    game.hands.sort();
-
-    game.winnings()
+    Game::try_from(input.as_str())
+        .unwrap()
+        .winnings()
 }
 
 #[cfg(test)]
