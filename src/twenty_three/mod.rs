@@ -6,6 +6,7 @@ mod day02;
 mod day03;
 mod day04;
 mod day06;
+mod day07;
 mod day08;
 mod day09;
 
@@ -17,7 +18,7 @@ const SOLUTIONS: [&dyn Solver; 10] = [
     &day04::SOLUTION,
     &day00::SOLUTION, // TODO: implement domain flatmap solution
     &day06::SOLUTION,
-    &day00::SOLUTION,
+    &day07::SOLUTION,
     &day08::SOLUTION,
     &day09::SOLUTION,
 ];
