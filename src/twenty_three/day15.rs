@@ -1,4 +1,5 @@
 use crate::Solution;
+use std::hash::{BuildHasher, Hash, Hasher};
 
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
@@ -30,62 +31,106 @@ impl PartialEq for Lens {
 
 impl Eq for Lens {}
 
-struct BoxMap {
-    boxes: [Vec<Lens>; 256],
+struct LavaMap<K: Hash + PartialEq, V, B: BuildHasher> {
+    build_hasher: B,
+    buckets: Vec<Vec<(K, V)>>,
 }
 
-impl BoxMap {
-    fn new() -> Self {
-        Self { boxes: [(); 256].map(|_| Vec::new())  }
+impl<K: Hash + PartialEq, V, B: BuildHasher> LavaMap<K, V, B> {
+    const DEFAULT_CAPACITY: usize = 256;
+
+    fn new(build_hasher: B) -> Self {
+        let buckets = (0..Self::DEFAULT_CAPACITY)
+            .map(|_| vec!())
+            .collect();
+
+        Self { build_hasher, buckets }
     }
 
-    fn remove(&mut self, key: &str) {
-        let hash = hash(key).unwrap();
-        self.boxes[hash as usize].retain(|e| e.label != key);
+    fn calculate_bucket(&self, key: &K) -> usize {
+        let mut hasher = self.build_hasher.build_hasher();
+        Hash::hash_slice(key, &mut hasher);
+
+        (hasher.finish() % self.buckets.capacity() as u64) as usize
     }
 
-    fn insert(&mut self, lens: Lens) {
-        let hash = hash(&lens.label).unwrap();
+    fn remove(&mut self, key: K) -> Option<V> {
+        let bucket = self.calculate_bucket(&key);
+        
+        let position = self.buckets[bucket].iter().position(|(k, _)| *k == key);
 
-        let existing = self
-            .boxes[hash as usize]
-            .iter()
-            .position(|l| l == &lens);
-
-
-        if let Some(index) = existing {
-            self.boxes[hash as usize][index] = lens;
+        if let Some(index) = position {
+            Some(self.buckets[bucket].remove(index).1)
         }
-
         else {
-            self.boxes[hash as usize].push(lens);
+            None
         }
     }
 
-    fn focusing_power(&self) -> usize {
-        self
-            .boxes
-            .iter()
-            .enumerate()
-            .map(|(box_slot, lenses)| lenses
-                 .iter()
-                 .enumerate()
-                 .map(|(lens_slot, lens)| {
-                     (box_slot + 1) * (lens_slot + 1) * lens.focal_length
-                 })
-                 .sum::<usize>()
-            )
-            .sum()
+    fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let bucket = self.calculate_bucket(&key);
+
+        let position = self.buckets[bucket].iter().position(|(k, _)| *k == key);
+
+        if let Some(index) = position {
+            let replaced = std::mem::replace(
+                &mut self.buckets[bucket][index], (key, value)
+            );
+
+            Some(replaced.1)
+        }
+        else {
+            self.buckets[bucket].push((key, value));
+
+            None
+        }
+    }
+}
+
+struct BuildLavaHasher;
+
+impl BuildHasher for BuildLavaHasher {
+    type Hasher = LavaHasher;
+
+    fn build_hasher(&self) -> LavaHasher {
+        LavaHasher { state: 0 }
+    }
+}
+
+struct LavaHasher {
+    state: u64,
+}
+
+impl Hasher for LavaHasher {
+    fn write(&mut self, bytes: &[u8]) {
+        for b in bytes {
+            self.state = self.state.wrapping_add(*b as u64);
+            self.state = self.state.wrapping_mul(17);
+        }
+    }
+
+    fn finish(&self) -> u64 {
+        self.state
+    }
+}
+
+struct LavaSliceKey<'a, K: Hash + PartialEq>(&'a [K]);
+
+impl<K: Hash + PartialEq> Hash for LavaSliceKey<'_, K> {
+    fn hash(&self, hasher: &mut dyn Hasher) {
+        for e in self.0 {
+            e.hash(hasher);
+        }
     }
 }
 
 struct LavaMaker {
-    box_map: BoxMap,
+    lava_map: LavaMap<String, usize, BuildLavaHasher>,
 }
 
 impl LavaMaker {
     fn new() -> Self {
-        Self { box_map: BoxMap::new() }
+        Self { lava_map: LavaMap::new(BuildLavaHasher {}) }
     }
 
     fn execute(&mut self, instruction: &str) {
@@ -96,24 +141,43 @@ impl LavaMaker {
             '=' => {
                 let focal_length = focal_length_str.parse::<usize>().unwrap();
                 self
-                    .box_map
-                    .insert(Lens { label: label.to_string(), focal_length })
+                    .lava_map
+                    .insert(label.to_string(), focal_length);
             },
-            '-' => self.box_map.remove(label),
-            _ => panic!("Invalid operation")
+            '-' => { self.lava_map.remove(label.to_string()); },
+            _ => panic!("Invalid operation"),
         }
     }
 
     fn focusing_power(&self) -> usize {
-        self.box_map.focusing_power()
+        self
+            .lava_map
+            .buckets
+            .iter()
+            .enumerate()
+            .map(|(box_slot, lenses)| lenses
+                 .iter()
+                 .enumerate()
+                 .map(|(lens_slot, lens)| {
+                     (box_slot + 1) * (lens_slot + 1) * lens.1
+                 })
+                 .sum::<usize>()
+            )
+            .sum()
     }
 }
 
 fn part1(input: &str) -> usize {
+    let builder = BuildLavaHasher {};
+
     input
         .trim()
         .split(',')
-        .map(|instruction| hash(instruction).unwrap() as usize)
+        .map(|instruction| {
+            let mut hasher = builder.build_hasher();
+            u8::hash_slice(instruction.as_bytes(), &mut hasher);
+            hasher.finish() as usize % 256
+        })
         .sum()
 }
 
