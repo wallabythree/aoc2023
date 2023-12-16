@@ -1,5 +1,6 @@
 use crate::Solution;
-use std::collections::{ HashSet, VecDeque };
+use std::collections::HashSet;
+
 
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
@@ -184,37 +185,48 @@ impl Cave {
         self
             .rows[photon.pos.y as usize][photon.pos.x as usize]
             .collide(photon)
+            .iter()
+            .filter(|photon| self.validate_photon(photon))
+            .copied()
+            .collect()
     }
 
-    fn bfs(&self, src: Photon, visited: &mut Vec<Photon>) -> usize {
-        let mut energized = HashSet::new();
-
-        let mut queue = VecDeque::from([src]);
-
-        while let Some(photon) = queue.pop_front() {
-            visited.push(photon);
-            energized.insert(photon.pos);
-
-            let next_photons = self.next_photons(photon);
-
-            for next_photon in next_photons {
-                if !self.validate_photon(&next_photon)
-                   || visited.contains(&next_photon) {
-                    continue;
-                }
-
-                queue.push_back(next_photon);
-            }
+    fn dfs(
+        &self,
+        photon: Photon,
+        visited: &mut HashSet<Photon>
+    ) -> usize {
+        if let Some(_) = visited.get(&photon) {
+            return 0;
         }
 
-        energized.len()
+        visited.insert(photon);
+
+        let next_photons = self.next_photons(photon);
+
+        let mut distances = vec!();
+
+        for next_photon in next_photons {
+            let distance = self.dfs(next_photon, visited);
+            distances.push(distance);
+        }
+
+        let distance = distances.iter().sum::<usize>() + 1;
+
+        distance
     }
 
-    fn energized(&self) -> usize {
-        let spark = Photon { pos: Position { x: 0, y: 0 }, dir: East };
-        let mut visited = vec!();
+    fn energized(&self, spark: Photon) -> usize {
+        let mut visited = HashSet::new();
 
-        self.bfs(spark, &mut visited)
+        let _ = self.dfs(spark, &mut visited);
+
+        visited
+            .iter()
+            .map(|photon| photon.pos)
+            .collect::<HashSet<_>>()
+            .len()
+
     }
 
     fn max_energized(&self) -> usize {
@@ -245,7 +257,7 @@ impl Cave {
 
         possibilities
             .iter()
-            .map(|spark| self.bfs(*spark, &mut vec!()))
+            .map(|spark| self.energized(*spark))
             .max()
             .unwrap()
     }
@@ -267,7 +279,7 @@ impl TryFrom<&str> for Cave {
 fn part1(input: &str) -> usize {
     let cave = Cave::try_from(input).unwrap();
 
-    cave.energized()
+    cave.energized(Photon { pos: Position { x: 0, y: 0 }, dir: East })
 }
 
 fn part2(input: &str) -> usize {
