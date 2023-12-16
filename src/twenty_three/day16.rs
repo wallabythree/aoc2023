@@ -220,7 +220,7 @@ impl Cave {
         let mut queue = VecDeque::from([src]);
 
         while let Some(photon) = queue.pop_front() {
-            println!("Photon: {:?}", photon);
+            //println!("Photon: {:?}", photon);
 
             visited.push(photon);
             energized.insert(photon.pos);
@@ -264,7 +264,6 @@ impl Cave {
 
     fn max_energized(&self) -> usize {
         let mut possibilities = vec!();
-        let mut visited = HashMap::new();
 
         for x in 0..self.width() {
             let north = Position { x: x as isize, y: 0 };
@@ -291,7 +290,7 @@ impl Cave {
 
         possibilities
             .iter()
-            .map(|spark| self.dfs(*spark, &mut visited))
+            .map(|spark| self.bfs(*spark, &mut vec!()))
             .max()
             .unwrap()
     }
@@ -319,8 +318,7 @@ fn part1(input: &str) -> usize {
 fn part2(input: &str) -> usize {
     let cave = Cave::try_from(input).unwrap();
 
-    //cave.max_energized()
-    0
+    cave.max_energized()
 }
 
 #[cfg(test)]
