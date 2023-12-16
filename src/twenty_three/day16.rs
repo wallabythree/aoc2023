@@ -1,6 +1,7 @@
 use crate::Solution;
 use std::collections::HashSet;
 
+
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -225,6 +226,7 @@ impl Cave {
             .map(|photon| photon.pos)
             .collect::<HashSet<_>>()
             .len()
+
     }
 
     fn max_energized(&self) -> usize {
