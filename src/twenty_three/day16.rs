@@ -1,5 +1,5 @@
 use crate::Solution;
-use std::collections::{ HashMap, HashSet, VecDeque };
+use std::collections::{ HashSet, VecDeque };
 
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
@@ -89,11 +89,11 @@ impl Tile {
             Tile::VerticalSplitter => {
                 match photon.dir {
                     East | West => {
-                        let mut north = photon.clone();
+                        let mut north = photon;
                         north.dir = North;
                         north.travel();
 
-                        let mut south = photon.clone();
+                        let mut south = photon;
                         south.dir = South;
                         south.travel();
 
@@ -109,11 +109,11 @@ impl Tile {
             Tile::HorizontalSplitter => {
                 match photon.dir {
                     North | South => {
-                        let mut west = photon.clone();
+                        let mut west = photon;
                         west.dir = West;
                         west.travel();
 
-                        let mut east = photon.clone();
+                        let mut east = photon;
                         east.dir = East;
                         east.travel();
 
@@ -154,7 +154,7 @@ struct Cave {
 
 impl Cave {
     fn width(&self) -> usize {
-        if self.rows.len() == 0 {
+        if self.rows.is_empty() {
             return 0;
         }
 
@@ -186,49 +186,20 @@ impl Cave {
             .collide(photon)
     }
 
-    fn dfs(
-        &self,
-        photon: Photon,
-        visited: &mut HashMap<Photon, usize>
-    ) -> usize {
-        if !self.validate_photon(&photon) {
-            return 0;
-        }
-
-        if let Some(distance) = visited.get(&photon) {
-            return *distance;
-        }
-
-        let next_photons = self.next_photons(photon);
-
-        let mut distances = vec!();
-
-        for next_photon in next_photons {
-            let distance = self.dfs(next_photon, visited);
-            distances.push(distance);
-        }
-
-        let distance = distances.iter().sum::<usize>() + 1;
-        visited.insert(photon, distance);
-
-        distance
-    }
-
     fn bfs(&self, src: Photon, visited: &mut Vec<Photon>) -> usize {
         let mut energized = HashSet::new();
 
         let mut queue = VecDeque::from([src]);
 
         while let Some(photon) = queue.pop_front() {
-            //println!("Photon: {:?}", photon);
-
             visited.push(photon);
             energized.insert(photon.pos);
 
             let next_photons = self.next_photons(photon);
 
             for next_photon in next_photons {
-                if !self.validate_photon(&next_photon) || visited.contains(&next_photon) {
+                if !self.validate_photon(&next_photon)
+                   || visited.contains(&next_photon) {
                     continue;
                 }
 
@@ -236,30 +207,14 @@ impl Cave {
             }
         }
 
-
-
         energized.len()
     }
 
     fn energized(&self) -> usize {
         let spark = Photon { pos: Position { x: 0, y: 0 }, dir: East };
-        let mut visited = vec!();// HashMap::new();
+        let mut visited = vec!();
 
-        let energized = self.bfs(spark, &mut visited);
-
-        for y in 0..self.height() {
-            for x in 0..self.width() {
-                if visited.iter().any(|key| key.pos == Position { x: x as isize, y: y as isize }) {
-                    print!("#");
-                }
-                else {
-                    print!(".");
-                }
-            }
-            println!("");
-        }
-
-        energized
+        self.bfs(spark, &mut visited)
     }
 
     fn max_energized(&self) -> usize {
