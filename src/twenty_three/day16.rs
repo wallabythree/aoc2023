@@ -1,10 +1,9 @@
 use crate::Solution;
 use std::collections::HashSet;
 
-
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Direction {
     North,
     East,
@@ -14,7 +13,7 @@ enum Direction {
 
 use Direction::{*};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Position {
     x: isize,
     y: isize,
@@ -33,7 +32,7 @@ impl Position {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 struct Photon {
     pos: Position,
     dir: Direction,
@@ -45,7 +44,6 @@ impl Photon {
     }
 }
 
-#[derive(Debug)]
 enum Tile {
     Empty,
     AcuteMirror,
@@ -148,7 +146,6 @@ impl TryFrom<char> for Tile {
     }
 }
 
-#[derive(Debug)]
 struct Cave {
     rows: Vec<Vec<Tile>>,
 }
@@ -191,29 +188,18 @@ impl Cave {
             .collect()
     }
 
-    fn dfs(
-        &self,
-        photon: Photon,
-        visited: &mut HashSet<Photon>
-    ) -> usize {
-        if let Some(_) = visited.get(&photon) {
-            return 0;
+    fn dfs(&self, photon: Photon, visited: &mut HashSet<Photon>) {
+        if visited.contains(&photon) {
+            return;
         }
 
         visited.insert(photon);
 
         let next_photons = self.next_photons(photon);
 
-        let mut distances = vec!();
-
         for next_photon in next_photons {
-            let distance = self.dfs(next_photon, visited);
-            distances.push(distance);
+            self.dfs(next_photon, visited);
         }
-
-        let distance = distances.iter().sum::<usize>() + 1;
-
-        distance
     }
 
     fn energized(&self, spark: Photon) -> usize {
