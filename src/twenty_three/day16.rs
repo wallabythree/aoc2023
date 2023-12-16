@@ -270,7 +270,7 @@ impl Cave {
             println!("");
         }
 
-
+        energized
     }
 
     fn max_energized(&self) -> usize {
