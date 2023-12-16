@@ -15,8 +15,9 @@ mod day11;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 
-const SOLUTIONS: [&dyn Solver; 16] = [
+const SOLUTIONS: [&dyn Solver; 17] = [
     &day00::SOLUTION,
     &day01::SOLUTION,
     &day02::SOLUTION,
@@ -33,6 +34,7 @@ const SOLUTIONS: [&dyn Solver; 16] = [
     &day13::SOLUTION,
     &day14::SOLUTION,
     &day15::SOLUTION,
+    &day16::SOLUTION,
 ];
 
 pub fn get_solution(day: usize) -> &'static dyn Solver {
