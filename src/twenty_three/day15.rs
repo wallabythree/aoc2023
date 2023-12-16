@@ -1,77 +1,139 @@
 use crate::Solution;
+use std::hash::{BuildHasher, Hash, Hasher};
 
 pub const SOLUTION: Solution<usize, usize> = Solution { part1, part2 };
 
-fn hash(plaintext: &str) -> Result<u8, &str> {
-    let mut hash = 0u8;
+struct LavaMap<K: Hash + PartialEq, V, B: BuildHasher> {
+    build_hasher: B,
+    buckets: Vec<Vec<(K, V)>>,
+}
 
-    for c in plaintext.chars() {
-        if !c.is_ascii() {
-            return Err("Plaintext contains non-ASCII characters");
+impl<K: Hash + PartialEq, V, B: BuildHasher> LavaMap<K, V, B> {
+    const DEFAULT_CAPACITY: usize = 256;
+
+    fn new(build_hasher: B) -> Self {
+        let buckets = (0..Self::DEFAULT_CAPACITY)
+            .map(|_| vec!())
+            .collect();
+
+        Self { build_hasher, buckets }
+    }
+
+    fn calculate_bucket(&self, key: &K) -> usize {
+        let mut hasher = self.build_hasher.build_hasher();
+        key.hash(&mut hasher);
+
+        (hasher.finish() % self.buckets.capacity() as u64) as usize
+    }
+
+    fn remove(&mut self, key: K) -> Option<V> {
+        let bucket = self.calculate_bucket(&key);
+        
+        let position = self.buckets[bucket].iter().position(|(k, _)| *k == key);
+
+        if let Some(index) = position {
+            Some(self.buckets[bucket].remove(index).1)
         }
-
-        hash = hash.wrapping_add(c as u8);
-        hash = hash.wrapping_mul(17);
-    }
-
-    Ok(hash)
-}
-
-struct Lens {
-    label: String,
-    focal_length: usize,
-}
-
-impl PartialEq for Lens {
-    fn eq(&self, other: &Self) -> bool {
-        self.label.eq(&other.label)
-    }
-}
-
-impl Eq for Lens {}
-
-struct BoxMap {
-    boxes: [Vec<Lens>; 256],
-}
-
-impl BoxMap {
-    fn new() -> Self {
-        Self { boxes: [(); 256].map(|_| Vec::new())  }
-    }
-
-    fn remove(&mut self, key: &str) {
-        let hash = hash(key).unwrap();
-        self.boxes[hash as usize].retain(|e| e.label != key);
-    }
-
-    fn insert(&mut self, lens: Lens) {
-        let hash = hash(&lens.label).unwrap();
-
-        let existing = self
-            .boxes[hash as usize]
-            .iter()
-            .position(|l| l == &lens);
-
-
-        if let Some(index) = existing {
-            self.boxes[hash as usize][index] = lens;
-        }
-
         else {
-            self.boxes[hash as usize].push(lens);
+            None
+        }
+    }
+
+    fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let bucket = self.calculate_bucket(&key);
+
+        let position = self.buckets[bucket].iter().position(|(k, _)| *k == key);
+
+        if let Some(index) = position {
+            let replaced = std::mem::replace(
+                &mut self.buckets[bucket][index], (key, value)
+            );
+
+            Some(replaced.1)
+        }
+        else {
+            self.buckets[bucket].push((key, value));
+
+            None
+        }
+    }
+}
+
+struct BuildLavaHasher;
+
+impl BuildHasher for BuildLavaHasher {
+    type Hasher = LavaHasher;
+
+    fn build_hasher(&self) -> LavaHasher {
+        LavaHasher { state: 0 }
+    }
+}
+
+struct LavaHasher {
+    state: u64,
+}
+
+impl Hasher for LavaHasher {
+    fn write(&mut self, bytes: &[u8]) {
+        for b in bytes {
+            self.state = self.state.wrapping_add(*b as u64);
+            self.state = self.state.wrapping_mul(17);
+        }
+    }
+
+    fn finish(&self) -> u64 {
+        self.state
+    }
+}
+
+#[derive(PartialEq)]
+struct LavaSliceKey<'a, K: Hash + PartialEq>(&'a [K]);
+
+impl<K: Hash + PartialEq> Hash for LavaSliceKey<'_, K> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for e in self.0 {
+            e.hash(state);
+        }
+    }
+}
+
+struct LavaMaker<'a> {
+    lava_map: LavaMap<LavaSliceKey<'a, u8>, usize, BuildLavaHasher>,
+}
+
+impl<'a> LavaMaker<'a> {
+    fn new() -> Self {
+        Self { lava_map: LavaMap::new(BuildLavaHasher {}) }
+    }
+
+    fn execute(&mut self, instruction: &'a str) {
+        let op = instruction.chars().find(|c| *c == '=' || *c == '-').unwrap();
+        let (label, focal_length_str) = instruction.split_once(op).unwrap();
+        let key = LavaSliceKey(label.as_bytes());
+    
+        match op {
+            '=' => {
+                let focal_length = focal_length_str.parse::<usize>().unwrap();
+                self
+                    .lava_map
+                    .insert(key, focal_length);
+            },
+            '-' => { self.lava_map.remove(key); },
+            _ => panic!("Invalid operation"),
         }
     }
 
     fn focusing_power(&self) -> usize {
         self
-            .boxes
+            .lava_map
+            .buckets
             .iter()
             .enumerate()
             .map(|(box_slot, lenses)| lenses
                  .iter()
                  .enumerate()
                  .map(|(lens_slot, lens)| {
-                     (box_slot + 1) * (lens_slot + 1) * lens.focal_length
+                     (box_slot + 1) * (lens_slot + 1) * lens.1
                  })
                  .sum::<usize>()
             )
@@ -79,41 +141,18 @@ impl BoxMap {
     }
 }
 
-struct LavaMaker {
-    box_map: BoxMap,
-}
-
-impl LavaMaker {
-    fn new() -> Self {
-        Self { box_map: BoxMap::new() }
-    }
-
-    fn execute(&mut self, instruction: &str) {
-        let op = instruction.chars().find(|c| *c == '=' || *c == '-').unwrap();
-        let (label, focal_length_str) = instruction.split_once(op).unwrap();
-    
-        match op {
-            '=' => {
-                let focal_length = focal_length_str.parse::<usize>().unwrap();
-                self
-                    .box_map
-                    .insert(Lens { label: label.to_string(), focal_length })
-            },
-            '-' => self.box_map.remove(label),
-            _ => panic!("Invalid operation")
-        }
-    }
-
-    fn focusing_power(&self) -> usize {
-        self.box_map.focusing_power()
-    }
-}
-
 fn part1(input: &str) -> usize {
+    let builder = BuildLavaHasher {};
+
     input
         .trim()
         .split(',')
-        .map(|instruction| hash(instruction).unwrap() as usize)
+        .map(|instruction| {
+            let mut hasher = builder.build_hasher();
+            let key = LavaSliceKey(instruction.as_bytes());
+            key.hash(&mut hasher);
+            hasher.finish() as usize % 256
+        })
         .sum()
 }
 
