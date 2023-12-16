@@ -189,15 +189,26 @@ impl Cave {
     fn dfs(
         &self,
         photon: Photon,
-        visited: &mut HashMap<Photon, usize>
+        visited: &mut HashMap<Photon, Option<usize>>
     ) -> usize {
         if !self.validate_photon(&photon) {
             return 0;
         }
 
         if let Some(distance) = visited.get(&photon) {
-            return *distance;
+            return distance.unwrap_or(0);
         }
+
+        /*
+        let energize = if visited.keys().any(|key| key.pos == photon.pos) {
+            0
+        }
+        else {
+            1
+        };
+        */
+
+        visited.insert(photon, None);
 
         let next_photons = self.next_photons(photon);
 
@@ -209,7 +220,7 @@ impl Cave {
         }
 
         let distance = distances.iter().sum::<usize>() + 1;
-        visited.insert(photon, distance);
+        visited.insert(photon, Some(distance));
 
         distance
     }
@@ -243,13 +254,13 @@ impl Cave {
 
     fn energized(&self) -> usize {
         let spark = Photon { pos: Position { x: 0, y: 0 }, dir: East };
-        let mut visited = vec!();// HashMap::new();
+        let mut visited = HashMap::new();
 
-        let energized = self.bfs(spark, &mut visited);
+        let energized = self.dfs(spark, &mut visited);
 
         for y in 0..self.height() {
             for x in 0..self.width() {
-                if visited.iter().any(|key| key.pos == Position { x: x as isize, y: y as isize }) {
+                if visited.keys().any(|key| key.pos == Position { x: x as isize, y: y as isize }) {
                     print!("#");
                 }
                 else {
@@ -259,7 +270,7 @@ impl Cave {
             println!("");
         }
 
-        energized
+
     }
 
     fn max_energized(&self) -> usize {
@@ -291,7 +302,9 @@ impl Cave {
 
         possibilities
             .iter()
+            .inspect(|spark| println!("spark: {:?}", spark))
             .map(|spark| self.dfs(*spark, &mut visited))
+            .inspect(|energized| println!("energized: {:?}\n", energized))
             .max()
             .unwrap()
     }
@@ -319,8 +332,7 @@ fn part1(input: &str) -> usize {
 fn part2(input: &str) -> usize {
     let cave = Cave::try_from(input).unwrap();
 
-    //cave.max_energized()
-    0
+    cave.max_energized()
 }
 
 #[cfg(test)]
